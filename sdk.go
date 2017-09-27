@@ -15,11 +15,10 @@ func main() {
 type Suretly struct {
 	Id    string
 	Token string
-	Mode  string
 }
 
 var client = &http.Client{Timeout: 10 * time.Second}
-var Endpoint = "https://api.suretly.io/"
+const Host = "api.suretly.io"
 
 // Public API methods
 // common
@@ -84,19 +83,21 @@ func (s Suretly) authKeyGen() (key string) {
 	return
 }
 
-func (s Suretly) get(url string, target interface{}) error {
+func (s Suretly) get(uri string, target interface{}) error {
 	var Header = map[string][]string{
 		"_auth": {s.authKeyGen()},
 	}
 	req := http.Request{
 		Header: Header,
 		Method: "GET",
+		Host: Host,
+		RequestURI: uri,
 	}
-	r, err := client.Do(&req)
+	res, err := client.Do(&req)
 	if err != nil {
 		return err
 	}
-	defer r.Body.Close()
+	defer res.Body.Close()
 
-	return json.NewDecoder(r.Body).Decode(target)
+	return json.NewDecoder(res.Body).Decode(target)
 }
