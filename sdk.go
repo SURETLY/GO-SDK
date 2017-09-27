@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"time"
 )
 
 func init() {
@@ -9,11 +10,17 @@ func init() {
 }
 
 type Suretly struct {
-	client http.Client
 	Id     string
 	Token  string
 }
 
+var client = &http.Client{ Timeout: 10 * time.Second }
+
+func (s Suretly) authKeyGen(id string, token string)  {
+
+}
+
+// Public API methods
 // common
 func (s Suretly) Options() {
 

@@ -1,10 +1,5 @@
 package main
 
-type Contract struct {
-	Text      string `json:"text"`
-	CreatedAt int    `json:"created_at"`
-}
-
 type Orders struct {
 	Total int     `json:"total"`
 	List  []Order `json:"list"`
@@ -61,8 +56,8 @@ type Borrower struct {
 	Birth        Birth    `json:"birth"`
 	Email        string   `json:"email"`
 	Phone        string   `json:"phone"`
-	Ip           string   `json:"ip"`          //?
-	ProfileUrl   string   `json:"profile_url"` // fb/vk/ok/etc  профили
+	Ip           string   `json:"ip"`
+	ProfileUrl   string   `json:"profile_url"`
 	PhotoUrl     string   `json:"photo_url"`
 	Passport     Passport `json:"passport"`
 	Registration Address  `json:"registration"`
