@@ -1,18 +1,19 @@
 package gosdk
 
 import (
+	"bytes"
 	"crypto/md5"
+	"crypto/tls"
 	"encoding/hex"
 	"encoding/json"
 	"net/http"
 	"time"
-	"crypto/tls"
 )
 
 type Suretly struct {
 	Id    string
 	Token string
-	Host string
+	Host  string
 }
 
 func NewSuretly(id string, token string, mode string) Suretly {
@@ -28,7 +29,7 @@ func NewSuretly(id string, token string, mode string) Suretly {
 var client = &http.Client{
 	Timeout: 10 * time.Second,
 	Transport: &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify : true},
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	},
 }
 
@@ -44,57 +45,98 @@ func (s Suretly) Orders() (orders Orders, err error) {
 	return
 }
 
+/**
+*	create new order
+ */
 // create order and actions with orders
 func (s Suretly) OrderNew(order OrderNew) (err error) {
 	err = s.post("/order/new", order, nil)
 	return
 }
 
-func (s Suretly) OrderStatus(id string) (status OrderStatus, err error){
+/**
+*	id - order id
+ */
+func (s Suretly) OrderStatus(id string) (status OrderStatus, err error) {
 	err = s.get("/order/status?id="+id, status)
 	return
 }
 
-func (s Suretly) OrderStop(id string) (err error){
+/**
+*	id - order id
+ */
+func (s Suretly) OrderStop(id string) (err error) {
 	err = s.post("/order/stop", map[string]string{"id": id}, nil)
 	return
 }
 
-func (s Suretly) OrderIssued(id string) {
+/**
+*	id - order id
+ */
+func (s Suretly) OrderIssued(id string) (err error) {
 	err = s.post("/order/issued", map[string]string{"id": id}, nil)
 	return
 }
 
-func (s Suretly) OrderPaid(id string) {
+/**
+*	id - order id
+ */
+func (s Suretly) OrderPaid(id string) (err error) {
 	err = s.post("/order/paid", map[string]string{"id": id}, nil)
 	return
 }
 
-func (s Suretly) OrderPartialPaid(id string, sum float32) (err error){
-	err = s.post("/order/partialpaid", map[string]string{"id": id, "sum": string(sum)}, nil)
+/**
+*	id - order id
+	sum - paid sum
+ */
+func (s Suretly) OrderPartialPaid(id string, sum float32) (err error) {
+	type PartialPaid struct {
+		Id  string  `json:"id"`
+		Sum float32 `json:"sum"`
+	}
+	err = s.post("/order/partialpaid", PartialPaid{Id: id, Sum: sum}, nil)
 	return
 }
 
-func (s Suretly) OrderUnpaid(id string) (err error){
+/**
+*	id - order id
+ */
+func (s Suretly) OrderUnpaid(id string) (err error) {
 	err = s.post("/order/unpaid", map[string]string{"id": id}, nil)
 	return
 }
 
+/**
+*	id - order id
+ */
 func (s Suretly) ContractGet(id string) (text string, err error) {
-	err = s.get("/order/contract/get?id="+id, text)
+	err = s.get("/contract/get?id="+id, text)
 	return
 }
 
-func (s Suretly) ContractAccept() {
-
+/**
+*	id - order id
+ */
+func (s Suretly) ContractAccept(id string) (err error) {
+	err = s.post("/contract/accept", map[string]string{"id": id}, nil)
+	return
 }
 
-func (s Suretly) Currencies() {
-
+/**
+*	list of currencies
+ */
+func (s Suretly) Currencies() (currencies []Currency, err error) {
+	err = s.get("/currencies", currencies)
+	return
 }
 
-func (s Suretly) Countries() {
-
+/**
+*	list of countries
+ */
+func (s Suretly) Countries() (countries []Country, err error) {
+	err = s.get("/countries", countries)
+	return
 }
 
 func (s Suretly) authKeyGen() (key string) {
@@ -106,7 +148,7 @@ func (s Suretly) authKeyGen() (key string) {
 }
 
 func (s Suretly) get(uri string, target interface{}) (err error) {
-	req, _ := http.NewRequest("GET", s.Host + uri, nil)
+	req, _ := http.NewRequest("GET", s.Host+uri, nil)
 	req.Header.Add("_auth", s.authKeyGen())
 
 	res, err := client.Do(req)
@@ -122,7 +164,7 @@ func (s Suretly) get(uri string, target interface{}) (err error) {
 
 func (s Suretly) post(uri string, body interface{}, target interface{}) (err error) {
 	b, _ := json.Marshal(body)
-	req, _ := http.NewRequest("POST", s.Host + uri, b)
+	req, _ := http.NewRequest("POST", s.Host+uri, bytes.NewReader(b))
 	req.Header.Add("_auth", s.authKeyGen())
 
 	res, err := client.Do(req)

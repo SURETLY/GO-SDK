@@ -5,6 +5,17 @@ type Orders struct {
 	List  []Order `json:"list"`
 }
 
+type Currency struct {
+	Code string `json:"code"`
+	Name string `json:"name"`
+}
+
+type Country struct {
+	Code         string `json:"code"`
+	Name         string `json:"name"`
+	CurrencyCode string `json:"currency_code"`
+}
+
 type Loan struct {
 	MinTerm    int     `json:"min_term"`
 	MaxTerm    int     `json:"max_term"`
@@ -109,5 +120,5 @@ type Address struct {
 
 type Error struct {
 	Code int
-	Msg string
+	Msg  string
 }
