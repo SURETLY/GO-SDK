@@ -1,4 +1,4 @@
-package main
+package gosdk
 
 import (
 	"crypto/md5"
@@ -6,24 +6,38 @@ import (
 	"encoding/json"
 	"net/http"
 	"time"
+	"crypto/tls"
 )
-
-func main() {
-
-}
 
 type Suretly struct {
 	Id    string
 	Token string
+	Host string
 }
 
-var client = &http.Client{Timeout: 10 * time.Second}
-const Host = "api.suretly.io"
+func NewSuretly(id string, token string, mode string) Suretly {
+	host := "https://api.suretly.io:3000"
+	if mode == "demo" {
+		host = "https://demo.suretly.io:3000"
+	} else if mode == "dev" {
+		host = "https://dev.suretly.io:3000"
+	}
+	return Suretly{Id: id, Token: token, Host: host}
+}
+
+var client = &http.Client{
+	Timeout: 10 * time.Second,
+	Transport: &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify : true},
+	},
+}
 
 // Public API methods
 // common
-func (s Suretly) Options() {
-
+func (s Suretly) Options() (loan Loan, err error) {
+	loan = Loan{}
+	err = s.get("/options", &loan)
+	return
 }
 
 func (s Suretly) Orders() {
@@ -83,21 +97,37 @@ func (s Suretly) authKeyGen() (key string) {
 	return
 }
 
-func (s Suretly) get(uri string, target interface{}) error {
-	var Header = map[string][]string{
-		"_auth": {s.authKeyGen()},
-	}
-	req := http.Request{
-		Header: Header,
-		Method: "GET",
-		Host: Host,
-		RequestURI: uri,
-	}
-	res, err := client.Do(&req)
+func (s Suretly) get(uri string, target interface{}) (err error) {
+	req, _ := http.NewRequest("GET", s.Host + uri, nil)
+	req.Header.Add("_auth", s.authKeyGen())
+
+	res, err := client.Do(req)
 	if err != nil {
 		return err
 	}
 	defer res.Body.Close()
 
-	return json.NewDecoder(res.Body).Decode(target)
+	err = json.NewDecoder(res.Body).Decode(target)
+
+	return
+}
+
+func (s Suretly) post(uri string, body interface{}, target interface{}) (err error) {
+	req := http.Request{}
+
+	req.Header = map[string][]string{
+		"_auth": {s.authKeyGen()},
+	}
+	req.Method = "POST"
+	req.Host = s.Host
+	req.RequestURI = uri
+
+	res, err := client.Do(&req)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+	err = json.NewDecoder(res.Body).Decode(target)
+
+	return
 }

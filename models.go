@@ -1,8 +1,16 @@
-package main
+package gosdk
 
 type Orders struct {
 	Total int     `json:"total"`
 	List  []Order `json:"list"`
+}
+
+type Loan struct {
+	MinTerm    int     `json:"min_term"`
+	MaxTerm    int     `json:"max_term"`
+	MinSum     float32 `json:"min_sum"`
+	MaxSum     float32 `json:"max_sum"`
+	ServerTime int     `json:"server_time"`
 }
 
 type Order struct {
@@ -97,4 +105,9 @@ type Address struct {
 	House    string `json:"house"`
 	Building string `json:"building"`
 	Flat     string `json:"flat"`
+}
+
+type Error struct {
+	Code int
+	Msg string
 }

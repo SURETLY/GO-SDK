@@ -1,4 +1,4 @@
-package main
+package gosdk
 
 import (
 	"math/rand"
