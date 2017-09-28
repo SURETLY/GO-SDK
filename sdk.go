@@ -35,46 +35,54 @@ var client = &http.Client{
 // Public API methods
 // common
 func (s Suretly) Options() (loan Loan, err error) {
-	loan = Loan{}
 	err = s.get("/options", &loan)
 	return
 }
 
-func (s Suretly) Orders() {
-
+func (s Suretly) Orders() (orders Orders, err error) {
+	err = s.get("/orders", &orders)
+	return
 }
 
 // create order and actions with orders
-func (s Suretly) OrderNew() {
-
+func (s Suretly) OrderNew(order OrderNew) (err error) {
+	err = s.post("/order/new", order, nil)
+	return
 }
 
-func (s Suretly) OrderStatus() {
-
+func (s Suretly) OrderStatus(id string) (status OrderStatus, err error){
+	err = s.get("/order/status?id="+id, status)
+	return
 }
 
-func (s Suretly) OrderStop() {
-
+func (s Suretly) OrderStop(id string) (err error){
+	err = s.post("/order/stop", map[string]string{"id": id}, nil)
+	return
 }
 
-func (s Suretly) OrderIssued() {
-
+func (s Suretly) OrderIssued(id string) {
+	err = s.post("/order/issued", map[string]string{"id": id}, nil)
+	return
 }
 
-func (s Suretly) OrderPaid() {
-
+func (s Suretly) OrderPaid(id string) {
+	err = s.post("/order/paid", map[string]string{"id": id}, nil)
+	return
 }
 
-func (s Suretly) OrderPartialPaid() {
-
+func (s Suretly) OrderPartialPaid(id string, sum float32) (err error){
+	err = s.post("/order/partialpaid", map[string]string{"id": id, "sum": string(sum)}, nil)
+	return
 }
 
-func (s Suretly) OrderUnpaid() {
-
+func (s Suretly) OrderUnpaid(id string) (err error){
+	err = s.post("/order/unpaid", map[string]string{"id": id}, nil)
+	return
 }
 
-func (s Suretly) ContractGet() {
-
+func (s Suretly) ContractGet(id string) (text string, err error) {
+	err = s.get("/order/contract/get?id="+id, text)
+	return
 }
 
 func (s Suretly) ContractAccept() {
@@ -113,16 +121,11 @@ func (s Suretly) get(uri string, target interface{}) (err error) {
 }
 
 func (s Suretly) post(uri string, body interface{}, target interface{}) (err error) {
-	req := http.Request{}
+	b, _ := json.Marshal(body)
+	req, _ := http.NewRequest("POST", s.Host + uri, b)
+	req.Header.Add("_auth", s.authKeyGen())
 
-	req.Header = map[string][]string{
-		"_auth": {s.authKeyGen()},
-	}
-	req.Method = "POST"
-	req.Host = s.Host
-	req.RequestURI = uri
-
-	res, err := client.Do(&req)
+	res, err := client.Do(req)
 	if err != nil {
 		return err
 	}
