@@ -58,7 +58,7 @@ func (s Suretly) OrderNew(order OrderNew) (err error) {
 *	id - order id
  */
 func (s Suretly) OrderStatus(id string) (status OrderStatus, err error) {
-	err = s.get("/order/status?id="+id, status)
+	err = s.get("/order/status?id="+id, &status)
 	return
 }
 
@@ -111,7 +111,7 @@ func (s Suretly) OrderUnpaid(id string) (err error) {
 *	id - order id
  */
 func (s Suretly) ContractGet(id string) (text string, err error) {
-	err = s.get("/contract/get?id="+id, text)
+	err = s.get("/contract/get?id="+id, &text)
 	return
 }
 
@@ -127,7 +127,7 @@ func (s Suretly) ContractAccept(id string) (err error) {
 *	list of currencies
  */
 func (s Suretly) Currencies() (currencies []Currency, err error) {
-	err = s.get("/currencies", currencies)
+	err = s.get("/currencies", &currencies)
 	return
 }
 
@@ -135,7 +135,7 @@ func (s Suretly) Currencies() (currencies []Currency, err error) {
 *	list of countries
  */
 func (s Suretly) Countries() (countries []Country, err error) {
-	err = s.get("/countries", countries)
+	err = s.get("/countries", &countries)
 	return
 }
 
