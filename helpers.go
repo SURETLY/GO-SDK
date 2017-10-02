@@ -5,17 +5,17 @@ import (
 	"time"
 )
 
-const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-const intset = "0123456789"
+const Charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+const Intset = "0123456789"
 
 var seededRand *rand.Rand = rand.New(rand.NewSource(time.Now().UnixNano()))
 
 func randomId(len int) (requestId string) {
-	requestId = stringWithCharset(len, charset)
+	requestId = StringWithCharset(len, Charset)
 	return
 }
 
-func stringWithCharset(length int, charset string) string {
+func StringWithCharset(length int, charset string) string {
 	b := make([]byte, length)
 	for i := range b {
 		b[i] = charset[seededRand.Intn(len(charset))]
