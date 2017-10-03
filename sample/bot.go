@@ -2,14 +2,14 @@ package main
 
 import (
 	"fmt"
-	"github.com/SURETLY/GO-SDK"
 	"math/rand"
 	"os"
 	"time"
+	"github.com/SURETLY/GO-SDK"
 )
 
 func main() {
-	sur := gosdk.NewSuretly("59d25e8bcea0995959de2da9", "gobot123123123", "dev")
+	sur := gosdk.NewDemo("59d25e8bcea0995959de2da9", "gobot123123123")
 	println(sur.AuthKeyGen())
 
 	println("Получаем лимиты на заявку...")
