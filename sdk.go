@@ -49,8 +49,8 @@ func (s Suretly) Orders() (orders Orders, err error) {
 *	create new order
  */
 // create order and actions with orders
-func (s Suretly) OrderNew(order OrderNew) (err error) {
-	err = s.post("/order/new", order, nil)
+func (s Suretly) OrderNew(order OrderNew) (err Error) {
+	s.post("/order/new", order, nil, &err)
 	return
 }
 
@@ -65,24 +65,24 @@ func (s Suretly) OrderStatus(id string) (status OrderStatus, err error) {
 /**
 *	id - order id
  */
-func (s Suretly) OrderStop(id string) (err error) {
-	err = s.post("/order/stop", map[string]string{"id": id}, nil)
+func (s Suretly) OrderStop(id string) (err Error) {
+	s.post("/order/stop", map[string]string{"id": id}, nil, &err)
 	return
 }
 
 /**
 *	id - order id
  */
-func (s Suretly) OrderIssued(id string) (err error) {
-	err = s.post("/order/issued", map[string]string{"id": id}, nil)
+func (s Suretly) OrderIssued(id string) (err Error) {
+	s.post("/order/issued", map[string]string{"id": id}, nil, &err)
 	return
 }
 
 /**
 *	id - order id
  */
-func (s Suretly) OrderPaid(id string) (err error) {
-	err = s.post("/order/paid", map[string]string{"id": id}, nil)
+func (s Suretly) OrderPaid(id string) (err Error) {
+	s.post("/order/paid", map[string]string{"id": id}, nil, &err)
 	return
 }
 
@@ -90,20 +90,20 @@ func (s Suretly) OrderPaid(id string) (err error) {
 *	id - order id
 	sum - paid sum
 */
-func (s Suretly) OrderPartialPaid(id string, sum float32) (err error) {
+func (s Suretly) OrderPartialPaid(id string, sum float32) (err Error) {
 	type PartialPaid struct {
 		Id  string  `json:"id"`
 		Sum float32 `json:"sum"`
 	}
-	err = s.post("/order/partialpaid", PartialPaid{Id: id, Sum: sum}, nil)
+	s.post("/order/partialpaid", PartialPaid{Id: id, Sum: sum}, nil, &err)
 	return
 }
 
 /**
 *	id - order id
  */
-func (s Suretly) OrderUnpaid(id string) (err error) {
-	err = s.post("/order/unpaid", map[string]string{"id": id}, nil)
+func (s Suretly) OrderUnpaid(id string) (err Error) {
+	s.post("/order/unpaid", map[string]string{"id": id}, nil, &err)
 	return
 }
 
@@ -118,8 +118,8 @@ func (s Suretly) ContractGet(id string) (text string, err error) {
 /**
 *	id - order id
  */
-func (s Suretly) ContractAccept(id string) (err error) {
-	err = s.post("/contract/accept", map[string]string{"id": id}, nil)
+func (s Suretly) ContractAccept(id string) (err Error) {
+	s.post("/contract/accept", map[string]string{"id": id}, nil, &err)
 	return
 }
 
@@ -162,17 +162,18 @@ func (s Suretly) get(uri string, target interface{}) (err error) {
 	return
 }
 
-func (s Suretly) post(uri string, body interface{}, target interface{}) (err error) {
+func (s Suretly) post(uri string, body interface{}, target interface{}, apiError *Error) (err error) {
 	b, _ := json.Marshal(body)
 	req, _ := http.NewRequest("POST", s.Host+uri, bytes.NewReader(b))
 	req.Header.Add("_auth", s.AuthKeyGen())
 
 	res, err := client.Do(req)
-	if err != nil {
-		return err
-	}
 	defer res.Body.Close()
-	err = json.NewDecoder(res.Body).Decode(target)
 
+	if err != nil {
+		err = json.NewDecoder(res.Body).Decode(apiError)
+		return
+	}
+	err = json.NewDecoder(res.Body).Decode(target)
 	return
 }
