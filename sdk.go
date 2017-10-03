@@ -35,13 +35,13 @@ var client = &http.Client{
 
 // Public API methods
 // common
-func (s Suretly) Options() (loan Loan, err error) {
-	err = s.get("/options", &loan)
+func (s Suretly) Options() (loan Loan, err Error) {
+	s.get("/options", &loan, &err)
 	return
 }
 
-func (s Suretly) Orders() (orders Orders, err error) {
-	err = s.get("/orders", &orders)
+func (s Suretly) Orders() (orders Orders, err Error) {
+	s.get("/orders", &orders, &err)
 	return
 }
 
@@ -49,16 +49,16 @@ func (s Suretly) Orders() (orders Orders, err error) {
 *	create new order
  */
 // create order and actions with orders
-func (s Suretly) OrderNew(order OrderNew) (err Error) {
-	s.post("/order/new", order, nil, &err)
+func (s Suretly) OrderNew(order OrderNew) (resp OrderNewResponse, err Error) {
+	s.post("/order/new", order, &resp, &err)
 	return
 }
 
 /**
 *	id - order id
  */
-func (s Suretly) OrderStatus(id string) (status OrderStatus, err error) {
-	err = s.get("/order/status?id="+id, &status)
+func (s Suretly) OrderStatus(id string) (status OrderStatus, err Error) {
+	s.get("/order/status?id="+id, &status, &err)
 	return
 }
 
@@ -110,8 +110,8 @@ func (s Suretly) OrderUnpaid(id string) (err Error) {
 /**
 *	id - order id
  */
-func (s Suretly) ContractGet(id string) (text string, err error) {
-	err = s.get("/contract/get?id="+id, &text)
+func (s Suretly) ContractGet(id string) (text string, err Error) {
+	s.get("/contract/get?id="+id, &text, &err)
 	return
 }
 
@@ -126,16 +126,16 @@ func (s Suretly) ContractAccept(id string) (err Error) {
 /**
 *	list of currencies
  */
-func (s Suretly) Currencies() (currencies []Currency, err error) {
-	err = s.get("/currencies", &currencies)
+func (s Suretly) Currencies() (currencies []Currency, err Error) {
+	s.get("/currencies", &currencies, &err)
 	return
 }
 
 /**
 *	list of countries
  */
-func (s Suretly) Countries() (countries []Country, err error) {
-	err = s.get("/countries", &countries)
+func (s Suretly) Countries() (countries []Country, err Error) {
+	s.get("/countries", &countries, &err)
 	return
 }
 
@@ -147,7 +147,7 @@ func (s Suretly) AuthKeyGen() (key string) {
 	return
 }
 
-func (s Suretly) get(uri string, target interface{}) (err error) {
+func (s Suretly) get(uri string, target interface{}, apiError *Error) (err error) {
 	req, _ := http.NewRequest("GET", s.Host+uri, nil)
 	req.Header.Add("_auth", s.AuthKeyGen())
 
@@ -156,6 +156,11 @@ func (s Suretly) get(uri string, target interface{}) (err error) {
 		return err
 	}
 	defer res.Body.Close()
+
+	if res.StatusCode != 200 {
+		json.NewDecoder(res.Body).Decode(apiError)
+		return
+	}
 
 	err = json.NewDecoder(res.Body).Decode(target)
 
@@ -168,10 +173,14 @@ func (s Suretly) post(uri string, body interface{}, target interface{}, apiError
 	req.Header.Add("_auth", s.AuthKeyGen())
 
 	res, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+
 	defer res.Body.Close()
 
-	if err != nil {
-		err = json.NewDecoder(res.Body).Decode(apiError)
+	if res.StatusCode != 200 {
+		json.NewDecoder(res.Body).Decode(apiError)
 		return
 	}
 	err = json.NewDecoder(res.Body).Decode(target)

@@ -57,6 +57,10 @@ type OrderNew struct {
 	Callback        string   `json:"callback"`
 }
 
+type OrderNewResponse struct {
+	Id string `json:"id"`
+}
+
 type OrderStatus struct {
 	Id            string  `json:"id"`
 	Status        int     `json:"status"`
