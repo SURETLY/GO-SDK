@@ -16,13 +16,13 @@ type Suretly struct {
 	Host  string
 }
 
-func NewSuretly(id string, token string, mode string) Suretly {
+func NewProduction(id string, token string) Suretly {
 	host := "https://api.suretly.io:3000"
-	if mode == "demo" {
-		host = "https://demo.suretly.io:3000"
-	} else if mode == "dev" {
-		host = "https://dev.suretly.io:3000"
-	}
+	return Suretly{Id: id, Token: token, Host: host}
+}
+
+func NewDemo(id string, token string) Suretly {
+	host := "https://dev.suretly.io:3000"
 	return Suretly{Id: id, Token: token, Host: host}
 }
 
@@ -89,7 +89,7 @@ func (s Suretly) OrderPaid(id string) (err error) {
 /**
 *	id - order id
 	sum - paid sum
- */
+*/
 func (s Suretly) OrderPartialPaid(id string, sum float32) (err error) {
 	type PartialPaid struct {
 		Id  string  `json:"id"`
@@ -139,7 +139,7 @@ func (s Suretly) Countries() (countries []Country, err error) {
 	return
 }
 
-func (s Suretly) authKeyGen() (key string) {
+func (s Suretly) AuthKeyGen() (key string) {
 	var requestId = randomId(10)
 	hash := md5.New()
 	hash.Write([]byte(requestId + s.Token))
@@ -149,7 +149,7 @@ func (s Suretly) authKeyGen() (key string) {
 
 func (s Suretly) get(uri string, target interface{}) (err error) {
 	req, _ := http.NewRequest("GET", s.Host+uri, nil)
-	req.Header.Add("_auth", s.authKeyGen())
+	req.Header.Add("_auth", s.AuthKeyGen())
 
 	res, err := client.Do(req)
 	if err != nil {
@@ -165,7 +165,7 @@ func (s Suretly) get(uri string, target interface{}) (err error) {
 func (s Suretly) post(uri string, body interface{}, target interface{}) (err error) {
 	b, _ := json.Marshal(body)
 	req, _ := http.NewRequest("POST", s.Host+uri, bytes.NewReader(b))
-	req.Header.Add("_auth", s.authKeyGen())
+	req.Header.Add("_auth", s.AuthKeyGen())
 
 	res, err := client.Do(req)
 	if err != nil {
