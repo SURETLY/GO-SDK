@@ -1,4 +1,4 @@
-package gosdk
+package suretly
 
 import (
 	"math/rand"

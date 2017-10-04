@@ -1,4 +1,4 @@
-package gosdk
+package suretly
 
 import (
 	"bytes"
@@ -10,37 +10,51 @@ import (
 	"time"
 )
 
-type Suretly struct {
+type Sdk struct {
 	Id    string
 	Token string
 	Host  string
+	client *http.Client
 }
 
-func NewProduction(id string, token string) Suretly {
+func NewProduction(id string, token string) Sdk {
 	host := "https://api.suretly.io:3000"
-	return Suretly{Id: id, Token: token, Host: host}
+	return Sdk{
+		Id: id,
+		Token: token,
+		Host: host,
+		client: &http.Client{
+			Timeout: 10 * time.Second,
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			},
+		},
+	}
 }
 
-func NewDemo(id string, token string) Suretly {
+func NewDemo(id string, token string) Sdk {
 	host := "https://dev.suretly.io:3000"
-	return Suretly{Id: id, Token: token, Host: host}
-}
-
-var client = &http.Client{
-	Timeout: 10 * time.Second,
-	Transport: &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-	},
+	return Sdk{
+		Id: id,
+		Token: token,
+		Host: host,
+		client: &http.Client{
+			Timeout: 10 * time.Second,
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			},
+		},
+	}
 }
 
 // Public API methods
 // common
-func (s Suretly) Options() (loan Loan, err Error) {
+func (s Sdk) Options() (loan Loan, err Error) {
 	s.get("/options", &loan, &err)
 	return
 }
 
-func (s Suretly) Orders() (orders Orders, err Error) {
+func (s Sdk) Orders() (orders Orders, err Error) {
 	s.get("/orders", &orders, &err)
 	return
 }
@@ -49,7 +63,7 @@ func (s Suretly) Orders() (orders Orders, err Error) {
 *	create new order
  */
 // create order and actions with orders
-func (s Suretly) OrderNew(order OrderNew) (resp OrderNewResponse, err Error) {
+func (s Sdk) OrderNew(order OrderNew) (resp OrderNewResponse, err Error) {
 	s.post("/order/new", order, &resp, &err)
 	return
 }
@@ -57,7 +71,7 @@ func (s Suretly) OrderNew(order OrderNew) (resp OrderNewResponse, err Error) {
 /**
 *	id - order id
  */
-func (s Suretly) OrderStatus(id string) (status OrderStatus, err Error) {
+func (s Sdk) OrderStatus(id string) (status OrderStatus, err Error) {
 	s.get("/order/status?id="+id, &status, &err)
 	return
 }
@@ -65,7 +79,7 @@ func (s Suretly) OrderStatus(id string) (status OrderStatus, err Error) {
 /**
 *	id - order id
  */
-func (s Suretly) OrderStop(id string) (err Error) {
+func (s Sdk) OrderStop(id string) (err Error) {
 	s.post("/order/stop", map[string]string{"id": id}, nil, &err)
 	return
 }
@@ -73,7 +87,7 @@ func (s Suretly) OrderStop(id string) (err Error) {
 /**
 *	id - order id
  */
-func (s Suretly) OrderIssued(id string) (err Error) {
+func (s Sdk) OrderIssued(id string) (err Error) {
 	s.post("/order/issued", map[string]string{"id": id}, nil, &err)
 	return
 }
@@ -81,7 +95,7 @@ func (s Suretly) OrderIssued(id string) (err Error) {
 /**
 *	id - order id
  */
-func (s Suretly) OrderPaid(id string) (err Error) {
+func (s Sdk) OrderPaid(id string) (err Error) {
 	s.post("/order/paid", map[string]string{"id": id}, nil, &err)
 	return
 }
@@ -90,7 +104,7 @@ func (s Suretly) OrderPaid(id string) (err Error) {
 *	id - order id
 	sum - paid sum
 */
-func (s Suretly) OrderPartialPaid(id string, sum float32) (err Error) {
+func (s Sdk) OrderPartialPaid(id string, sum float32) (err Error) {
 	type PartialPaid struct {
 		Id  string  `json:"id"`
 		Sum float32 `json:"sum"`
@@ -102,7 +116,7 @@ func (s Suretly) OrderPartialPaid(id string, sum float32) (err Error) {
 /**
 *	id - order id
  */
-func (s Suretly) OrderUnpaid(id string) (err Error) {
+func (s Sdk) OrderUnpaid(id string) (err Error) {
 	s.post("/order/unpaid", map[string]string{"id": id}, nil, &err)
 	return
 }
@@ -110,7 +124,7 @@ func (s Suretly) OrderUnpaid(id string) (err Error) {
 /**
 *	id - order id
  */
-func (s Suretly) ContractGet(id string) (text string, err Error) {
+func (s Sdk) ContractGet(id string) (text string, err Error) {
 	s.get("/contract/get?id="+id, &text, &err)
 	return
 }
@@ -118,7 +132,7 @@ func (s Suretly) ContractGet(id string) (text string, err Error) {
 /**
 *	id - order id
  */
-func (s Suretly) ContractAccept(id string) (err Error) {
+func (s Sdk) ContractAccept(id string) (err Error) {
 	s.post("/contract/accept", map[string]string{"id": id}, nil, &err)
 	return
 }
@@ -126,7 +140,7 @@ func (s Suretly) ContractAccept(id string) (err Error) {
 /**
 *	list of currencies
  */
-func (s Suretly) Currencies() (currencies []Currency, err Error) {
+func (s Sdk) Currencies() (currencies []Currency, err Error) {
 	s.get("/currencies", &currencies, &err)
 	return
 }
@@ -134,12 +148,12 @@ func (s Suretly) Currencies() (currencies []Currency, err Error) {
 /**
 *	list of countries
  */
-func (s Suretly) Countries() (countries []Country, err Error) {
+func (s Sdk) Countries() (countries []Country, err Error) {
 	s.get("/countries", &countries, &err)
 	return
 }
 
-func (s Suretly) AuthKeyGen() (key string) {
+func (s Sdk) AuthKeyGen() (key string) {
 	var requestId = randomId(10)
 	hash := md5.New()
 	hash.Write([]byte(requestId + s.Token))
@@ -147,11 +161,11 @@ func (s Suretly) AuthKeyGen() (key string) {
 	return
 }
 
-func (s Suretly) get(uri string, target interface{}, apiError *Error) (err error) {
+func (s Sdk) get(uri string, target interface{}, apiError *Error) (err error) {
 	req, _ := http.NewRequest("GET", s.Host+uri, nil)
 	req.Header.Add("_auth", s.AuthKeyGen())
 
-	res, err := client.Do(req)
+	res, err := s.client.Do(req)
 	if err != nil {
 		return err
 	}
@@ -167,12 +181,12 @@ func (s Suretly) get(uri string, target interface{}, apiError *Error) (err error
 	return
 }
 
-func (s Suretly) post(uri string, body interface{}, target interface{}, apiError *Error) (err error) {
+func (s Sdk) post(uri string, body interface{}, target interface{}, apiError *Error) (err error) {
 	b, _ := json.Marshal(body)
 	req, _ := http.NewRequest("POST", s.Host+uri, bytes.NewReader(b))
 	req.Header.Add("_auth", s.AuthKeyGen())
 
-	res, err := client.Do(req)
+	res, err := s.client.Do(req)
 	if err != nil {
 		return err
 	}

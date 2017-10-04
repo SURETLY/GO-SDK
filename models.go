@@ -1,4 +1,4 @@
-package gosdk
+package suretly
 
 type Orders struct {
 	Total int     `json:"total"`
