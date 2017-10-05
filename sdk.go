@@ -11,18 +11,18 @@ import (
 )
 
 type Sdk struct {
-	Id    string
-	Token string
-	Host  string
+	Id     string
+	Token  string
+	Host   string
 	client *http.Client
 }
 
 func NewProduction(id string, token string) Sdk {
 	host := "https://api.suretly.io:3000"
 	return Sdk{
-		Id: id,
+		Id:    id,
 		Token: token,
-		Host: host,
+		Host:  host,
 		client: &http.Client{
 			Timeout: 10 * time.Second,
 			Transport: &http.Transport{
@@ -35,9 +35,9 @@ func NewProduction(id string, token string) Sdk {
 func NewDemo(id string, token string) Sdk {
 	host := "https://dev.suretly.io:3000"
 	return Sdk{
-		Id: id,
+		Id:    id,
 		Token: token,
-		Host: host,
+		Host:  host,
 		client: &http.Client{
 			Timeout: 10 * time.Second,
 			Transport: &http.Transport{
