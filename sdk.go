@@ -33,7 +33,7 @@ func NewProduction(id string, token string) Sdk {
 }
 
 func NewDemo(id string, token string) Sdk {
-	host := "https://demo.suretly.io:3000"
+	host := "https://sandbox.suretly.io:3000"
 	return Sdk{
 		Id:    id,
 		Token: token,
