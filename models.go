@@ -52,6 +52,7 @@ type Order struct {
 	Status          OrderStatusCode        `json:"status"`
 	PaymentStatus   OrderPaymentStatusCode `json:"payment_status"`
 	Borrower        Borrower               `json:"borrower"`
+	CreditScoreType	string				   `json:"credit_score_type"`
 	UserCreditScore int                    `json:"user_credit_score"`
 	Cost            float32                `json:"cost"`      // стоимость поручительства
 	LoanSum         float32                `json:"loan_sum"`  // сумма займа
@@ -71,6 +72,7 @@ type OrderNew struct {
 	Uid             string   `json:"uid"`
 	Public          bool     `json:"is_public"`
 	Borrower        Borrower `json:"borrower"`
+	CreditScoreType	string	 `json:"credit_score_type"`
 	UserCreditScore int      `json:"user_credit_score"`
 	LoanSum         float32  `json:"loan_sum"`  // сумма займа
 	LoanTerm        int      `json:"loan_term"` // срок в днях
